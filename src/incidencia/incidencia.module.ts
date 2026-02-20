@@ -4,9 +4,11 @@ import { IncidenciaService } from './incidencia.service';
 import { IncidenciaController } from './incidencia.controller';
 import { Incidencia } from './entities/incidencia.entity';
 import { Justificante } from '../justificante/entities/justificante.entity';
+import { Empleado } from '../empleado/entities/empleado.entity';
+import { TipoIncidencia } from '../tipo-incidencia/entities/tipo-incidencia.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Incidencia, Justificante])],
+  imports: [TypeOrmModule.forFeature([Incidencia, Justificante, Empleado, TipoIncidencia])],
   controllers: [IncidenciaController],
   providers: [IncidenciaService],
   exports: [IncidenciaService]

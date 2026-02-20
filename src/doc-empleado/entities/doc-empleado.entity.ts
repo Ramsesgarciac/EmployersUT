@@ -22,11 +22,14 @@ export class DocEmpleado {
     @CreateDateColumn()
     fecha_carga: Date;
 
-    @Column({ type: 'varchar', length: 50, default: 'Pendiente' })
-    estado: string;
+    @Column({ type: 'boolean', default: true })
+    activo: boolean;  // true = versión actual, false = versión antigua (historial)
 
     @UpdateDateColumn()
     fecha_actualizacion: Date;
+
+    @Column({ type: 'int', default: 1 })
+    version: number;  // Número de versión del documento
 
     @ManyToOne(() => Empleado, (empleado) => empleado.documentos)
     @JoinColumn({ name: 'id_empleado' })

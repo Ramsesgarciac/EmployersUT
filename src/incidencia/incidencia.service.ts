@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Incidencia } from './entities/incidencia.entity';
 import { Justificante } from '../justificante/entities/justificante.entity';
+import { Empleado } from '../empleado/entities/empleado.entity';
+import { TipoIncidencia } from '../tipo-incidencia/entities/tipo-incidencia.entity';
 import { CreateIncidenciaDto } from './dto/create-incidencia.dto';
 import { UpdateIncidenciaDto } from './dto/update-incidencia.dto';
 import * as fs from 'fs';
@@ -15,9 +17,31 @@ export class IncidenciaService {
     private incidenciaRepository: Repository<Incidencia>,
     @InjectRepository(Justificante)
     private justificanteRepository: Repository<Justificante>,
+    @InjectRepository(Empleado)
+    private empleadoRepository: Repository<Empleado>,
+    @InjectRepository(TipoIncidencia)
+    private tipoIncidenciaRepository: Repository<TipoIncidencia>,
   ) { }
 
   async create(createIncidenciaDto: CreateIncidenciaDto): Promise<Incidencia> {
+    // Verificar que el empleado existe
+    const empleado = await this.empleadoRepository.findOne({
+      where: { id_empleado: createIncidenciaDto.id_empleado }
+    });
+
+    if (!empleado) {
+      throw new NotFoundException(`Empleado con ID ${createIncidenciaDto.id_empleado} no encontrado`);
+    }
+
+    // Verificar que el tipo de incidencia existe
+    const tipoIncidencia = await this.tipoIncidenciaRepository.findOne({
+      where: { id_tipo_incidencia: createIncidenciaDto.id_tipo_incidencia }
+    });
+
+    if (!tipoIncidencia) {
+      throw new NotFoundException(`Tipo de incidencia con ID ${createIncidenciaDto.id_tipo_incidencia} no encontrado`);
+    }
+
     const incidencia = this.incidenciaRepository.create(createIncidenciaDto);
     return await this.incidenciaRepository.save(incidencia);
   }

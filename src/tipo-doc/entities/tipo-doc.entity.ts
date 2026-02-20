@@ -21,6 +21,7 @@ export class TipoDoc {
     @Column({ default: true })
     activo: boolean;
 
+    // 1 TipoDoc puede tener MUCHOS DocEmpleado (historial de versiones)
     @OneToMany(() => DocEmpleado, (doc) => doc.tipoDoc)
     documentos: DocEmpleado[];
 }
