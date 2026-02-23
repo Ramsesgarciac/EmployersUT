@@ -26,6 +26,9 @@ import { TipoDoc } from './tipo-doc/entities/tipo-doc.entity';
 import { DocEmpleado } from './doc-empleado/entities/doc-empleado.entity';
 import { TipoIncidenciaModule } from './tipo-incidencia/tipo-incidencia.module';
 import { JustificanteModule } from './justificante/justificante.module';
+import { CatalogoEventosModule } from './catalogo-eventos/catalogo-eventos.module';
+import { EventoModule } from './evento/evento.module';
+import { HojaVidaModule } from './hoja-vida/hoja-vida.module';
 
 @Module({
   imports: [
@@ -70,6 +73,9 @@ import { JustificanteModule } from './justificante/justificante.module';
     CategoriaEmpleadoModule,
     TipoDocModule,
     DocEmpleadoModule,
+    CatalogoEventosModule,
+    EventoModule,
+    HojaVidaModule,
   ],
   controllers: [AppController], // AGREGAR ESTO
   providers: [AppService],      // AGREGAR ESTO

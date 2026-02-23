@@ -1,34 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { CatalogoEventosService } from './catalogo-eventos.service';
 import { CreateCatalogoEventoDto } from './dto/create-catalogo-evento.dto';
 import { UpdateCatalogoEventoDto } from './dto/update-catalogo-evento.dto';
 
 @Controller('catalogo-eventos')
 export class CatalogoEventosController {
-  constructor(private readonly catalogoEventosService: CatalogoEventosService) {}
+  constructor(private readonly catalogoService: CatalogoEventosService) { }
 
   @Post()
-  create(@Body() createCatalogoEventoDto: CreateCatalogoEventoDto) {
-    return this.catalogoEventosService.create(createCatalogoEventoDto);
+  create(@Body() createDto: CreateCatalogoEventoDto) {
+    return this.catalogoService.create(createDto);
   }
 
   @Get()
   findAll() {
-    return this.catalogoEventosService.findAll();
+    return this.catalogoService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.catalogoEventosService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.catalogoService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCatalogoEventoDto: UpdateCatalogoEventoDto) {
-    return this.catalogoEventosService.update(+id, updateCatalogoEventoDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: UpdateCatalogoEventoDto) {
+    return this.catalogoService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.catalogoEventosService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.catalogoService.remove(id);
   }
 }

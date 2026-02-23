@@ -1,34 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Res, Header } from '@nestjs/common';
+import type { Response } from 'express';
 import { HojaVidaService } from './hoja-vida.service';
-import { CreateHojaVidaDto } from './dto/create-hoja-vida.dto';
-import { UpdateHojaVidaDto } from './dto/update-hoja-vida.dto';
 
 @Controller('hoja-vida')
 export class HojaVidaController {
-  constructor(private readonly hojaVidaService: HojaVidaService) {}
+  constructor(private readonly hojaVidaService: HojaVidaService) { }
 
-  @Post()
-  create(@Body() createHojaVidaDto: CreateHojaVidaDto) {
-    return this.hojaVidaService.create(createHojaVidaDto);
+  @Get('empleado/:id_empleado')
+  findByEmpleado(@Param('id_empleado', ParseIntPipe) id_empleado: number) {
+    return this.hojaVidaService.findByEmpleado(id_empleado);
   }
 
-  @Get()
-  findAll() {
-    return this.hojaVidaService.findAll();
+  @Get('resumen/:id_empleado')
+  getResumen(@Param('id_empleado', ParseIntPipe) id_empleado: number) {
+    return this.hojaVidaService.getResumen(id_empleado);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.hojaVidaService.findOne(+id);
-  }
+  @Get('pdf/:id_empleado')
+  @Header('Content-Type', 'application/pdf')
+  async generatePDF(
+    @Param('id_empleado', ParseIntPipe) id_empleado: number,
+    @Res() res: Response
+  ) {
+    const pdfBuffer = await this.hojaVidaService.generatePDF(id_empleado);
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHojaVidaDto: UpdateHojaVidaDto) {
-    return this.hojaVidaService.update(+id, updateHojaVidaDto);
-  }
+    const empleado = await this.hojaVidaService.findByEmpleado(id_empleado);
+    const filename = `HojaVida_${empleado.empleado.numero_empleado}_${Date.now()}.pdf`;
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.hojaVidaService.remove(+id);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.send(pdfBuffer);
   }
 }
