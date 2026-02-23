@@ -71,10 +71,24 @@ export class DocEmpleadoService {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
 
-    // Generar nombre único para el archivo
-    const timestamp = Date.now();
+    // Generar nombre del archivo: nombre_empleado_tipo_doc.extension
     const extension = path.extname(file.originalname);
-    const fileName = `doc_${id_tipo_doc}_v${nuevaVersion}_${timestamp}${extension}`;
+    const nombreEmpleadoLimpio = empleado.nombre
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+      .replace(/\s+/g, '_') // Espacios por guiones bajos
+      .replace(/[^a-z0-9_]/g, ''); // Solo letras, números y guiones bajos
+
+    const nombreTipoDocLimpio = tipoDoc.nombre_doc
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+      .replace(/\s+/g, '_') // Espacios por guiones bajos
+      .replace(/[^a-z0-9_]/g, ''); // Solo letras, números y guiones bajos
+
+    const timestamp = Date.now();
+    const fileName = `${nombreEmpleadoLimpio}_${nombreTipoDocLimpio}_v${nuevaVersion}_${timestamp}${extension}`;
     const filePath = path.join(uploadPath, fileName);
 
     // Guardar archivo
