@@ -37,6 +37,9 @@ export class Empleado {
     @Column()
     id_categoria: number;
 
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    salario_actual: number;
+
     @CreateDateColumn()
     fecha_creacion: Date;
 

@@ -1,15 +1,18 @@
+// src/empleado/empleado.service.ts
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Empleado } from './entities/empleado.entity';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
+import { EventoService } from '../evento/evento.service';  // ✅ IMPORTAR
 
 @Injectable()
 export class EmpleadoService {
   constructor(
     @InjectRepository(Empleado)
     private empleadoRepository: Repository<Empleado>,
+    private eventoService: EventoService,  // ✅ INYECTAR EventoService
   ) { }
 
   async create(createEmpleadoDto: CreateEmpleadoDto): Promise<Empleado> {
@@ -26,8 +29,25 @@ export class EmpleadoService {
       throw new ConflictException('Ya existe un empleado con ese CURP, RFC o número de empleado');
     }
 
+    // Crear empleado
     const empleado = this.empleadoRepository.create(createEmpleadoDto);
-    return await this.empleadoRepository.save(empleado);
+    const empleadoGuardado = await this.empleadoRepository.save(empleado);
+
+    // ✅ Crear evento de "Alta en el trabajo" automáticamente
+    try {
+      await this.eventoService.create({
+        id_empleado: empleadoGuardado.id_empleado,
+        id_tipo_evento: 4,  // ID del tipo "Alta en el trabajo"
+        fecha_evento: new Date(),
+        cargo_nuevo: createEmpleadoDto.puesto,
+        salario_nuevo: createEmpleadoDto.salario_actual
+      });
+    } catch (error) {
+      console.error('Error al crear evento de alta:', error);
+      // No lanzar error, solo loguearlo para no bloquear la creación del empleado
+    }
+
+    return empleadoGuardado;
   }
 
   async findAll(): Promise<Empleado[]> {
@@ -52,10 +72,6 @@ export class EmpleadoService {
       order: { nombre: 'ASC' }
     });
   }
-
-
-  //Al momento de subir un documento poner como prefijo el nombre y el numero de empleado de el trabajador en el nombre del documento
-
 
   async findOne(id: number): Promise<Empleado> {
     const empleado = await this.empleadoRepository.findOne({

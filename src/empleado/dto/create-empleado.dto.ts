@@ -48,4 +48,8 @@ export class CreateEmpleadoDto {
     @IsBoolean()
     @IsOptional()
     activo?: boolean;
+
+    @IsNumber()
+    @IsOptional()
+    salario_actual?: number;
 }
