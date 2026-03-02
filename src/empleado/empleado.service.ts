@@ -1,18 +1,17 @@
-// src/empleado/empleado.service.ts
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Empleado } from './entities/empleado.entity';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
-import { EventoService } from '../evento/evento.service';  // ✅ IMPORTAR
+import { EventoService } from '../evento/evento.service';
 
 @Injectable()
 export class EmpleadoService {
   constructor(
     @InjectRepository(Empleado)
     private empleadoRepository: Repository<Empleado>,
-    private eventoService: EventoService,  // ✅ INYECTAR EventoService
+    private eventoService: EventoService,
   ) { }
 
   async create(createEmpleadoDto: CreateEmpleadoDto): Promise<Empleado> {
@@ -44,7 +43,6 @@ export class EmpleadoService {
       });
     } catch (error) {
       console.error('Error al crear evento de alta:', error);
-      // No lanzar error, solo loguearlo para no bloquear la creación del empleado
     }
 
     return empleadoGuardado;
@@ -110,8 +108,24 @@ export class EmpleadoService {
 
   async deactivate(id: number): Promise<Empleado> {
     const empleado = await this.findOne(id);
+
+    // ✅ Primero desactivar el empleado
     empleado.activo = false;
-    return await this.empleadoRepository.save(empleado);
+    const empleadoDesactivado = await this.empleadoRepository.save(empleado);
+
+    // ✅ Crear evento de "Baja" automáticamente (ID 5)
+    try {
+      await this.eventoService.createEventoSinValidacion({
+        id_empleado: empleadoDesactivado.id_empleado,
+        id_tipo_evento: 5,  // ID del tipo "Baja del empleado"
+        fecha_evento: new Date(),
+        cargo_anterior: empleadoDesactivado.puesto,
+      });
+    } catch (error) {
+      console.error('Error al crear evento de baja:', error);
+    }
+
+    return empleadoDesactivado;
   }
 
   async remove(id: number): Promise<void> {

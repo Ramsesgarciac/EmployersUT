@@ -1,3 +1,4 @@
+// src/evento/evento.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -37,6 +38,49 @@ export class EventoService {
       throw new BadRequestException(
         'No se pueden agregar eventos a un empleado inactivo'
       );
+    }
+
+    // Verificar que el tipo de evento existe
+    const tipoEvento = await this.catalogoRepository.findOne({
+      where: { id_tipo_evento: eventoData.id_tipo_evento }
+    });
+
+    if (!tipoEvento) {
+      throw new NotFoundException(
+        `Tipo de evento con ID ${eventoData.id_tipo_evento} no encontrado`
+      );
+    }
+
+    // Buscar o crear hoja de vida
+    let hojaVida = await this.hojaVidaRepository.findOne({
+      where: { id_empleado }
+    });
+
+    if (!hojaVida) {
+      hojaVida = this.hojaVidaRepository.create({ id_empleado });
+      hojaVida = await this.hojaVidaRepository.save(hojaVida);
+    }
+
+    // Crear evento
+    const evento = this.eventoRepository.create({
+      ...eventoData,
+      id_hoja_vida: hojaVida.id_hoja_vida
+    });
+
+    return await this.eventoRepository.save(evento);
+  }
+
+  // ✅ NUEVO MÉTODO: Permite crear eventos sin validar si el empleado está activo
+  async createEventoSinValidacion(createEventoDto: CreateEventoDto): Promise<Evento> {
+    const { id_empleado, ...eventoData } = createEventoDto;
+
+    // Solo verificar que el empleado existe (SIN validar si está activo)
+    const empleado = await this.empleadoRepository.findOne({
+      where: { id_empleado }
+    });
+
+    if (!empleado) {
+      throw new NotFoundException(`Empleado con ID ${id_empleado} no encontrado`);
     }
 
     // Verificar que el tipo de evento existe
