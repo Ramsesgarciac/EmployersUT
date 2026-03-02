@@ -29,6 +29,9 @@ import { JustificanteModule } from './justificante/justificante.module';
 import { CatalogoEventosModule } from './catalogo-eventos/catalogo-eventos.module';
 import { EventoModule } from './evento/evento.module';
 import { HojaVidaModule } from './hoja-vida/hoja-vida.module';
+import { TipoContratoModule } from './tipo-contrato/tipo-contrato.module';
+import { ContratoModule } from './contrato/contrato.module';
+import { TipoContrato } from './tipo-contrato/entities/tipo-contrato.entity';
 
 @Module({
   imports: [
@@ -57,6 +60,7 @@ import { HojaVidaModule } from './hoja-vida/hoja-vida.module';
           CatalogoEventos,
           TipoDoc,
           DocEmpleado,
+          TipoContrato,
         ],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
@@ -76,6 +80,8 @@ import { HojaVidaModule } from './hoja-vida/hoja-vida.module';
     CatalogoEventosModule,
     EventoModule,
     HojaVidaModule,
+    TipoContratoModule,
+    ContratoModule,
   ],
   controllers: [AppController], // AGREGAR ESTO
   providers: [AppService],      // AGREGAR ESTO

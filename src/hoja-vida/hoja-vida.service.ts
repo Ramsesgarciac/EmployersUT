@@ -90,7 +90,6 @@ export class HojaVidaService {
 
         doc.moveDown(2);
 
-        // ===== SECCIÓN: DATOS DEL EMPLEADO =====
         doc.fillColor(colorPrimario)
           .fontSize(14)
           .font('Helvetica-Bold')
@@ -98,7 +97,6 @@ export class HojaVidaService {
 
         doc.moveDown(0.8);
 
-        // Tabla de datos del empleado
         const datosEmpleado = [
           { label: 'Nombre', value: hojaVida.empleado.nombre },
           { label: 'Número de Empleado', value: hojaVida.empleado.numero_empleado.toString() },
