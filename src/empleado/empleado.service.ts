@@ -32,7 +32,7 @@ export class EmpleadoService {
     const empleado = this.empleadoRepository.create(createEmpleadoDto);
     const empleadoGuardado = await this.empleadoRepository.save(empleado);
 
-    // ✅ Crear evento de "Alta en el trabajo" automáticamente
+    // Crear evento de "Alta en el trabajo" automáticamente
     try {
       await this.eventoService.create({
         id_empleado: empleadoGuardado.id_empleado,
@@ -109,11 +109,11 @@ export class EmpleadoService {
   async deactivate(id: number): Promise<Empleado> {
     const empleado = await this.findOne(id);
 
-    // ✅ Primero desactivar el empleado
+    //  Primero desactivar el empleado
     empleado.activo = false;
     const empleadoDesactivado = await this.empleadoRepository.save(empleado);
 
-    // ✅ Crear evento de "Baja" automáticamente (ID 5)
+    //  Crear evento de "Baja" automáticamente (ID 5)
     try {
       await this.eventoService.createEventoSinValidacion({
         id_empleado: empleadoDesactivado.id_empleado,

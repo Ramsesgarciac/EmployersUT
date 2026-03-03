@@ -15,6 +15,9 @@ export class CatActividades {
     @Column({ type: 'text', nullable: true })
     descripcion: string;
 
+    @Column({ type: 'boolean', default: true })
+    activa: boolean;
+
     @ManyToOne(() => CategoriaEmpleado, (categoria) => categoria.actividades)
     @JoinColumn({ name: 'id_cat_empleado' })
     categoria: CategoriaEmpleado;

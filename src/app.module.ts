@@ -32,6 +32,7 @@ import { HojaVidaModule } from './hoja-vida/hoja-vida.module';
 import { TipoContratoModule } from './tipo-contrato/tipo-contrato.module';
 import { ContratoModule } from './contrato/contrato.module';
 import { TipoContrato } from './tipo-contrato/entities/tipo-contrato.entity';
+import { CatActividadesModule } from './cat-actividades/cat-actividades.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { TipoContrato } from './tipo-contrato/entities/tipo-contrato.entity';
     HojaVidaModule,
     TipoContratoModule,
     ContratoModule,
+    CatActividadesModule
   ],
   controllers: [AppController], // AGREGAR ESTO
   providers: [AppService],      // AGREGAR ESTO
