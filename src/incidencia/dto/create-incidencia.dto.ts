@@ -10,13 +10,13 @@ export class CreateIncidenciaDto {
     @IsNotEmpty()
     id_tipo_incidencia: number;
 
-    @Type(() => Date)
+    @IsDateString()
     @IsNotEmpty()
-    fecha_inicio: Date;
+    fecha_inicio: string;
 
-    @Type(() => Date)
+    @IsDateString()
     @IsNotEmpty()
-    fecha_fin: Date;
+    fecha_fin: string;
 
     @IsString()
     @IsOptional()

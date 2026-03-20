@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateEventoDto {
@@ -10,9 +10,9 @@ export class CreateEventoDto {
     @IsNotEmpty()
     id_tipo_evento: number;
 
-    @Type(() => Date)
+    @IsDateString()
     @IsNotEmpty()
-    fecha_evento: Date;
+    fecha_evento: string;
 
     @IsString()
     @IsOptional()

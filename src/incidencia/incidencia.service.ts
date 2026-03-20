@@ -74,7 +74,7 @@ export class IncidenciaService {
     });
   }
 
-  async findByDateRange(fecha_inicio: Date, fecha_fin: Date): Promise<Incidencia[]> {
+  async findByDateRange(fecha_inicio: string, fecha_fin: string): Promise<Incidencia[]> {
     return await this.incidenciaRepository.find({
       where: {
         fecha_inicio: Between(fecha_inicio, fecha_fin)

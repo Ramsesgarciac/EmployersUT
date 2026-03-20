@@ -37,7 +37,7 @@ export class EmpleadoService {
       await this.eventoService.create({
         id_empleado: empleadoGuardado.id_empleado,
         id_tipo_evento: 4,  // ID del tipo "Alta en el trabajo"
-        fecha_evento: new Date(),
+        fecha_evento: new Date().toISOString().split('T')[0],
         cargo_nuevo: createEmpleadoDto.puesto,
         salario_nuevo: createEmpleadoDto.salario_actual
       });
@@ -118,7 +118,7 @@ export class EmpleadoService {
       await this.eventoService.createEventoSinValidacion({
         id_empleado: empleadoDesactivado.id_empleado,
         id_tipo_evento: 5,  // ID del tipo "Baja del empleado"
-        fecha_evento: new Date(),
+        fecha_evento: new Date().toISOString().split('T')[0],
         cargo_anterior: empleadoDesactivado.puesto,
       });
     } catch (error) {

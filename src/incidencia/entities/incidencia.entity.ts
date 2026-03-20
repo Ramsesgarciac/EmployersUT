@@ -14,11 +14,21 @@ export class Incidencia {
     @Column()
     id_tipo_incidencia: number;
 
-    @Column({ type: 'date' })
-    fecha_inicio: Date;
+    @Column({
+        type: 'date', transformer: {
+            to: (value: string) => value,
+            from: (value: string) => value,
+        }
+    })
+    fecha_inicio: string;
 
-    @Column({ type: 'date' })
-    fecha_fin: Date;
+    @Column({
+        type: 'date', transformer: {
+            to: (value: string) => value,
+            from: (value: string) => value,
+        }
+    })
+    fecha_fin: string;
 
     @Column({ type: 'text', nullable: true })
     observaciones: string;

@@ -13,8 +13,13 @@ export class Evento {
     @Column()
     id_tipo_evento: number;
 
-    @Column({ type: 'date' })
-    fecha_evento: Date;
+    @Column({
+        type: 'date', transformer: {
+            to: (value: string) => value,
+            from: (value: string) => value,
+        }
+    })
+    fecha_evento: string;
 
     @Column({ type: 'varchar', length: 100, nullable: true })
     cargo_anterior: string;

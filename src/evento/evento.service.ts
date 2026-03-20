@@ -65,9 +65,9 @@ export class EventoService {
     const evento = this.eventoRepository.create({
       ...eventoData,
       id_hoja_vida: hojaVida.id_hoja_vida
-    });
+    } as any);
 
-    return await this.eventoRepository.save(evento);
+    return await this.eventoRepository.save(evento) as any;
   }
 
   // ✅ NUEVO MÉTODO: Permite crear eventos sin validar si el empleado está activo
@@ -108,9 +108,9 @@ export class EventoService {
     const evento = this.eventoRepository.create({
       ...eventoData,
       id_hoja_vida: hojaVida.id_hoja_vida
-    });
+    } as any);
 
-    return await this.eventoRepository.save(evento);
+    return await this.eventoRepository.save(evento) as any;
   }
 
   async findByEmpleado(id_empleado: number): Promise<Evento[]> {

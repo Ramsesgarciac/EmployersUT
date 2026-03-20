@@ -40,8 +40,8 @@ export class IncidenciaController {
       throw new BadRequestException('Debe proporcionar fecha_inicio y fecha_fin');
     }
     return this.incidenciaService.findByDateRange(
-      new Date(fecha_inicio),
-      new Date(fecha_fin)
+      fecha_inicio,
+      fecha_fin
     );
   }
 
