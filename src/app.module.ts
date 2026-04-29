@@ -33,6 +33,8 @@ import { TipoContratoModule } from './tipo-contrato/tipo-contrato.module';
 import { ContratoModule } from './contrato/contrato.module';
 import { TipoContrato } from './tipo-contrato/entities/tipo-contrato.entity';
 import { CatActividadesModule } from './cat-actividades/cat-actividades.module';
+import { AuthModule } from './auth/auth.module';
+import { User } from './auth/entities/user.entity';
 
 @Module({
   imports: [
@@ -48,8 +50,10 @@ import { CatActividadesModule } from './cat-actividades/cat-actividades.module';
         username: configService.get('DB_USERNAME', 'root'),
         password: configService.get('DB_PASSWORD', 'CercaTrova4'),
         database: configService.get('DB_DATABASE', 'gestiones'),
+        autoLoadEntities: true,
         entities: [
           Empleado,
+          User,
           CategoriaEmpleado,
           CatActividades,
           Incidencia,
@@ -82,6 +86,7 @@ import { CatActividadesModule } from './cat-actividades/cat-actividades.module';
     EventoModule,
     HojaVidaModule,
     TipoContratoModule,
+    AuthModule,
     ContratoModule,
     CatActividadesModule
   ],

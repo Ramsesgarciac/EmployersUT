@@ -40,6 +40,9 @@ export class Empleado {
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     salario_actual: number;
 
+    @Column({ type: 'varchar', length: 11, unique: true, nullable: true })
+    numero_seguridad_social: string;
+
     @CreateDateColumn()
     fecha_creacion: Date;
 

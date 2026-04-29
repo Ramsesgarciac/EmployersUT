@@ -52,4 +52,12 @@ export class CreateEmpleadoDto {
     @IsNumber()
     @IsOptional()
     salario_actual?: number;
+
+    @IsString()
+    @IsOptional()
+    @Length(11, 11, { message: 'El NSS debe tener exactamente 11 dígitos' })
+    @Matches(/^[0-9]{11}$/, {
+        message: 'El NSS debe contener solo números. Ejemplo: 12345678901'
+    })
+    numero_seguridad_social?: string;
 }
