@@ -20,13 +20,16 @@ export class EmpleadoService {
       where: [
         { curp: createEmpleadoDto.curp },
         { rfc: createEmpleadoDto.rfc },
-        { numero_empleado: createEmpleadoDto.numero_empleado }
+        { numero_empleado: createEmpleadoDto.numero_empleado },
+        { numero_seguridad_social: createEmpleadoDto.numero_seguridad_social }
       ]
     });
 
     if (existente) {
-      throw new ConflictException('Ya existe un empleado con ese CURP, RFC o número de empleado');
+      throw new ConflictException('Ya existe un empleado con ese CURP, RFC, número de empleado o NSS');
     }
+
+
 
     // Crear empleado
     const empleado = this.empleadoRepository.create(createEmpleadoDto);
@@ -88,12 +91,13 @@ export class EmpleadoService {
     const empleado = await this.findOne(id);
 
     // Verificar duplicados si se actualizan campos únicos
-    if (updateEmpleadoDto.curp || updateEmpleadoDto.rfc || updateEmpleadoDto.numero_empleado) {
+    if (updateEmpleadoDto.curp || updateEmpleadoDto.rfc || updateEmpleadoDto.numero_empleado || updateEmpleadoDto.numero_seguridad_social) {
       const duplicado = await this.empleadoRepository.findOne({
         where: [
           { curp: updateEmpleadoDto.curp },
           { rfc: updateEmpleadoDto.rfc },
-          { numero_empleado: updateEmpleadoDto.numero_empleado }
+          { numero_empleado: updateEmpleadoDto.numero_empleado },
+          { numero_seguridad_social: updateEmpleadoDto.numero_seguridad_social }
         ]
       });
 
