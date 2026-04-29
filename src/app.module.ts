@@ -35,6 +35,8 @@ import { TipoContrato } from './tipo-contrato/entities/tipo-contrato.entity';
 import { CatActividadesModule } from './cat-actividades/cat-actividades.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './auth/entities/user.entity';
+import { FaltaAdministrativaModule } from './falta-administrativa/falta-administrativa.module';
+
 
 @Module({
   imports: [
@@ -88,7 +90,8 @@ import { User } from './auth/entities/user.entity';
     TipoContratoModule,
     AuthModule,
     ContratoModule,
-    CatActividadesModule
+    CatActividadesModule,
+    FaltaAdministrativaModule
   ],
   controllers: [AppController], // AGREGAR ESTO
   providers: [AppService],      // AGREGAR ESTO
