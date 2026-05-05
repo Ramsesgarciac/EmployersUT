@@ -8,7 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   HttpStatus,
-  HttpCode
+  HttpCode,
 } from '@nestjs/common';
 import { EmpleadoService } from './empleado.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
@@ -16,7 +16,7 @@ import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 
 @Controller('empleados')
 export class EmpleadoController {
-  constructor(private readonly empleadoService: EmpleadoService) { }
+  constructor(private readonly empleadoService: EmpleadoService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -57,7 +57,7 @@ export class EmpleadoController {
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateEmpleadoDto: UpdateEmpleadoDto
+    @Body() updateEmpleadoDto: UpdateEmpleadoDto,
   ) {
     return this.empleadoService.update(id, updateEmpleadoDto);
   }
@@ -65,6 +65,11 @@ export class EmpleadoController {
   @Patch(':id/desactivar')
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.empleadoService.deactivate(id);
+  }
+
+  @Patch(':id/activar')
+  activate(@Param('id', ParseIntPipe) id: number) {
+    return this.empleadoService.activate(id);
   }
 
   @Delete(':id')

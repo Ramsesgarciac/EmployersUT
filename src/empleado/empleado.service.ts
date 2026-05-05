@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Empleado } from './entities/empleado.entity';
@@ -12,7 +16,7 @@ export class EmpleadoService {
     @InjectRepository(Empleado)
     private empleadoRepository: Repository<Empleado>,
     private eventoService: EventoService,
-  ) { }
+  ) {}
 
   async create(createEmpleadoDto: CreateEmpleadoDto): Promise<Empleado> {
     // Verificar si ya existe empleado con mismo CURP o RFC
@@ -21,15 +25,15 @@ export class EmpleadoService {
         { curp: createEmpleadoDto.curp },
         { rfc: createEmpleadoDto.rfc },
         { numero_empleado: createEmpleadoDto.numero_empleado },
-        { numero_seguridad_social: createEmpleadoDto.numero_seguridad_social }
-      ]
+        { numero_seguridad_social: createEmpleadoDto.numero_seguridad_social },
+      ],
     });
 
     if (existente) {
-      throw new ConflictException('Ya existe un empleado con ese CURP, RFC, número de empleado o NSS');
+      throw new ConflictException(
+        'Ya existe un empleado con ese CURP, RFC, número de empleado o NSS',
+      );
     }
-
-
 
     // Crear empleado
     const empleado = this.empleadoRepository.create(createEmpleadoDto);
@@ -39,10 +43,10 @@ export class EmpleadoService {
     try {
       await this.eventoService.create({
         id_empleado: empleadoGuardado.id_empleado,
-        id_tipo_evento: 4,  // ID del tipo "Alta en el trabajo"
+        id_tipo_evento: 4, // ID del tipo "Alta en el trabajo"
         fecha_evento: new Date().toISOString().split('T')[0],
         cargo_nuevo: createEmpleadoDto.puesto,
-        salario_nuevo: createEmpleadoDto.salario_actual
+        salario_nuevo: createEmpleadoDto.salario_actual,
       });
     } catch (error) {
       console.error('Error al crear evento de alta:', error);
@@ -53,8 +57,14 @@ export class EmpleadoService {
 
   async findAll(): Promise<Empleado[]> {
     return await this.empleadoRepository.find({
-      relations: ['categoria', 'incidencias', 'documentos', 'hojaVida', 'contratos'],
-      order: { id_empleado: 'DESC' }
+      relations: [
+        'categoria',
+        'incidencias',
+        'documentos',
+        'hojaVida',
+        'contratos',
+      ],
+      order: { id_empleado: 'DESC' },
     });
   }
 
@@ -62,7 +72,7 @@ export class EmpleadoService {
     return await this.empleadoRepository.find({
       where: { activo: true },
       relations: ['categoria'],
-      order: { nombre: 'ASC' }
+      order: { nombre: 'ASC' },
     });
   }
 
@@ -70,14 +80,20 @@ export class EmpleadoService {
     return await this.empleadoRepository.find({
       where: { activo: false },
       relations: ['categoria'],
-      order: { nombre: 'ASC' }
+      order: { nombre: 'ASC' },
     });
   }
 
   async findOne(id: number): Promise<Empleado> {
     const empleado = await this.empleadoRepository.findOne({
       where: { id_empleado: id },
-      relations: ['categoria', 'incidencias', 'documentos', 'hojaVida', 'contratos']
+      relations: [
+        'categoria',
+        'incidencias',
+        'documentos',
+        'hojaVida',
+        'contratos',
+      ],
     });
 
     if (!empleado) {
@@ -87,18 +103,28 @@ export class EmpleadoService {
     return empleado;
   }
 
-  async update(id: number, updateEmpleadoDto: UpdateEmpleadoDto): Promise<Empleado> {
+  async update(
+    id: number,
+    updateEmpleadoDto: UpdateEmpleadoDto,
+  ): Promise<Empleado> {
     const empleado = await this.findOne(id);
 
     // Verificar duplicados si se actualizan campos únicos
-    if (updateEmpleadoDto.curp || updateEmpleadoDto.rfc || updateEmpleadoDto.numero_empleado || updateEmpleadoDto.numero_seguridad_social) {
+    if (
+      updateEmpleadoDto.curp ||
+      updateEmpleadoDto.rfc ||
+      updateEmpleadoDto.numero_empleado ||
+      updateEmpleadoDto.numero_seguridad_social
+    ) {
       const duplicado = await this.empleadoRepository.findOne({
         where: [
           { curp: updateEmpleadoDto.curp },
           { rfc: updateEmpleadoDto.rfc },
           { numero_empleado: updateEmpleadoDto.numero_empleado },
-          { numero_seguridad_social: updateEmpleadoDto.numero_seguridad_social }
-        ]
+          {
+            numero_seguridad_social: updateEmpleadoDto.numero_seguridad_social,
+          },
+        ],
       });
 
       if (duplicado && duplicado.id_empleado !== id) {
@@ -121,7 +147,7 @@ export class EmpleadoService {
     try {
       await this.eventoService.createEventoSinValidacion({
         id_empleado: empleadoDesactivado.id_empleado,
-        id_tipo_evento: 5,  // ID del tipo "Baja del empleado"
+        id_tipo_evento: 5, // ID del tipo "Baja del empleado"
         fecha_evento: new Date().toISOString().split('T')[0],
         cargo_anterior: empleadoDesactivado.puesto,
       });
@@ -132,6 +158,28 @@ export class EmpleadoService {
     return empleadoDesactivado;
   }
 
+  async activate(id: number): Promise<Empleado> {
+    const empleado = await this.findOne(id);
+
+    //  Primero activar el empleado
+    empleado.activo = true;
+    const empleadoActivado = await this.empleadoRepository.save(empleado);
+
+    //  Crear evento de "Reintegracion a la universidad" automáticamente (ID 6)
+    try {
+      await this.eventoService.createEventoSinValidacion({
+        id_empleado: empleadoActivado.id_empleado,
+        id_tipo_evento: 6, // ID del tipo "Reintegracion a la universidad"
+        fecha_evento: new Date().toISOString().split('T')[0],
+        cargo_anterior: empleadoActivado.puesto,
+      });
+    } catch (error) {
+      console.error('Error al crear evento de reintegracion:', error);
+    }
+
+    return empleadoActivado;
+  }
+
   async remove(id: number): Promise<void> {
     const empleado = await this.findOne(id);
     await this.empleadoRepository.remove(empleado);
@@ -140,18 +188,20 @@ export class EmpleadoService {
   async findByCategoria(id_categoria: number): Promise<Empleado[]> {
     return await this.empleadoRepository.find({
       where: { id_categoria },
-      relations: ['categoria']
+      relations: ['categoria'],
     });
   }
 
   async findByNumeroEmpleado(numero_empleado: number): Promise<Empleado> {
     const empleado = await this.empleadoRepository.findOne({
       where: { numero_empleado },
-      relations: ['categoria']
+      relations: ['categoria'],
     });
 
     if (!empleado) {
-      throw new NotFoundException(`Empleado con número ${numero_empleado} no encontrado`);
+      throw new NotFoundException(
+        `Empleado con número ${numero_empleado} no encontrado`,
+      );
     }
 
     return empleado;
