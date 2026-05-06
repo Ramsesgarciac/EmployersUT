@@ -80,6 +80,16 @@ export class ContratoController {
     return this.contratoService.verificarYActualizarContratosVencidos();
   }
 
+  @Post('enviar-alertas-vencimiento')
+  enviarAlertasVencimiento() {
+    return this.contratoService.enviarAlertasContratosPorVencer();
+  }
+
+  @Post('probar-correo')
+  probarCorreo(@Body('correo') correo?: string) {
+    return this.contratoService.enviarCorreoPrueba(correo);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.contratoService.findOne(id);

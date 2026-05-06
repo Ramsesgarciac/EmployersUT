@@ -1,12 +1,15 @@
 // src/contrato/contrato.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual } from 'typeorm';
+import { Repository, LessThanOrEqual, Between } from 'typeorm';
 import { Contrato } from './entities/contrato.entity';
 import { Empleado } from '../empleado/entities/empleado.entity';
 import { TipoContrato } from '../tipo-contrato/entities/tipo-contrato.entity';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -19,7 +22,121 @@ export class ContratoService {
     private empleadoRepository: Repository<Empleado>,
     @InjectRepository(TipoContrato)
     private tipoContratoRepository: Repository<TipoContrato>,
+    private configService: ConfigService,
   ) { }
+
+  private getMailTransporter(): Transporter | null {
+    const host = this.configService.get<string>('MAIL_HOST');
+    const user = this.configService.get<string>('MAIL_USER');
+    const pass = this.configService.get<string>('MAIL_PASSWORD');
+
+    if (!host || !user || !pass) {
+      console.warn('No se enviaron alertas de contratos: faltan MAIL_HOST, MAIL_USER o MAIL_PASSWORD en .env');
+      return null;
+    }
+
+    return nodemailer.createTransport({
+      host,
+      port: Number(this.configService.get('MAIL_PORT', 587)),
+      secure: this.configService.get('MAIL_SECURE', 'false') === 'true',
+      auth: {
+        user,
+        pass,
+      },
+    });
+  }
+
+  private getFechaObjetivo(diasRestantes: number): { inicio: Date; fin: Date } {
+    const inicio = new Date();
+    inicio.setHours(0, 0, 0, 0);
+    inicio.setDate(inicio.getDate() + diasRestantes);
+
+    const fin = new Date(inicio);
+    fin.setHours(23, 59, 59, 999);
+
+    return { inicio, fin };
+  }
+
+  private formatearFecha(fecha: Date): string {
+    return new Intl.DateTimeFormat('es-MX', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(fecha));
+  }
+
+  private async enviarCorreoAlertaContrato(contrato: Contrato, diasRestantes: number): Promise<void> {
+    const transporter = this.getMailTransporter();
+    const to = this.configService.get<string>('MAIL_TO');
+
+    if (!transporter || !to) {
+      console.warn('No se envio alerta de contrato: falta MAIL_TO en .env');
+      return;
+    }
+
+    const mailFrom = this.configService.get<string>('MAIL_FROM');
+    const mailUser = this.configService.get<string>('MAIL_USER');
+    const from = mailFrom || mailUser || to;
+    const empleado = contrato.empleado?.nombre ?? `Empleado ID ${contrato.id_empleado}`;
+    const tipoContrato = contrato.tipoContrato?.nombre ?? `Tipo ID ${contrato.id_tipo_contrato}`;
+    const fechaFin = this.formatearFecha(contrato.fecha_fin);
+    const asuntoTiempo = diasRestantes === 1 ? 'manana' : `en ${diasRestantes} dias`;
+
+    await transporter.sendMail({
+      from,
+      to,
+      subject: `Contrato por vencer ${asuntoTiempo}: ${empleado}`,
+      text: [
+        `El contrato de ${empleado} esta por vencer ${asuntoTiempo}.`,
+        '',
+        `Empleado: ${empleado}`,
+        `Numero de empleado: ${contrato.empleado?.numero_empleado ?? 'No disponible'}`,
+        `Tipo de contrato: ${tipoContrato}`,
+        `Fecha de fin: ${fechaFin}`,
+        `Dias restantes: ${diasRestantes}`,
+      ].join('\n'),
+      html: `
+        <p>El contrato de <strong>${empleado}</strong> esta por vencer ${asuntoTiempo}.</p>
+        <ul>
+          <li><strong>Empleado:</strong> ${empleado}</li>
+          <li><strong>Numero de empleado:</strong> ${contrato.empleado?.numero_empleado ?? 'No disponible'}</li>
+          <li><strong>Tipo de contrato:</strong> ${tipoContrato}</li>
+          <li><strong>Fecha de fin:</strong> ${fechaFin}</li>
+          <li><strong>Dias restantes:</strong> ${diasRestantes}</li>
+        </ul>
+      `,
+    });
+  }
+
+  async enviarCorreoPrueba(correoDestino?: string): Promise<{ mensaje: string; destinatario: string }> {
+    const transporter = this.getMailTransporter();
+    const to = correoDestino || this.configService.get<string>('MAIL_TO');
+
+    if (!transporter) {
+      throw new BadRequestException('Faltan MAIL_HOST, MAIL_USER o MAIL_PASSWORD en .env');
+    }
+
+    if (!to) {
+      throw new BadRequestException('Debes enviar un correo destino o configurar MAIL_TO en .env');
+    }
+
+    const mailFrom = this.configService.get<string>('MAIL_FROM');
+    const mailUser = this.configService.get<string>('MAIL_USER');
+    const from = mailFrom || mailUser || to;
+
+    await transporter.sendMail({
+      from,
+      to,
+      subject: 'Correo de prueba - GestionEM',
+      text: 'Este es un correo de prueba enviado desde el backend de GestionEM.',
+      html: '<p>Este es un correo de prueba enviado desde el backend de <strong>GestionEM</strong>.</p>',
+    });
+
+    return {
+      mensaje: 'Correo de prueba enviado correctamente',
+      destinatario: to,
+    };
+  }
 
   async uploadContrato(
     id_empleado: number,
@@ -111,6 +228,50 @@ export class ContratoService {
         console.log(`❌ Contrato ID ${contrato.id_contrato} del empleado ${contrato.empleado.nombre} marcado como no vigente`);
       }
     }
+  }
+
+  @Cron('0 8 * * *', { timeZone: 'America/Mexico_City' })
+  async enviarAlertasContratosPorVencer(): Promise<{
+    total_alertas: number;
+    detalle: Array<{ dias_restantes: number; contratos_encontrados: number; correos_enviados: number }>;
+  }> {
+    const alertas = [30, 7, 1];
+    const detalle: Array<{ dias_restantes: number; contratos_encontrados: number; correos_enviados: number }> = [];
+    let totalAlertas = 0;
+
+    for (const diasRestantes of alertas) {
+      const { inicio, fin } = this.getFechaObjetivo(diasRestantes);
+      const contratos = await this.contratoRepository.find({
+        where: {
+          vigente: true,
+          fecha_fin: Between(inicio, fin),
+        },
+        relations: ['empleado', 'tipoContrato'],
+      });
+
+      let correosEnviados = 0;
+
+      for (const contrato of contratos) {
+        try {
+          await this.enviarCorreoAlertaContrato(contrato, diasRestantes);
+          correosEnviados++;
+          totalAlertas++;
+        } catch (error) {
+          console.error(`Error al enviar alerta del contrato ${contrato.id_contrato}:`, error);
+        }
+      }
+
+      detalle.push({
+        dias_restantes: diasRestantes,
+        contratos_encontrados: contratos.length,
+        correos_enviados: correosEnviados,
+      });
+    }
+
+    return {
+      total_alertas: totalAlertas,
+      detalle,
+    };
   }
 
   // ✅ MÉTODO MANUAL: Para verificar contratos vencidos bajo demanda

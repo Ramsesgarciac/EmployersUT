@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // Importar AppController y AppService
 import { AppController } from './app.controller';
@@ -43,6 +44,7 @@ import { FaltaAdministrativaModule } from './falta-administrativa/falta-administ
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule, TipoIncidenciaModule, JustificanteModule],
       useFactory: (configService: ConfigService) => ({
