@@ -1,14 +1,13 @@
-import { IsOptional, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsBoolean, IsDateString } from 'class-validator';
 
 export class UpdateContratoDto {
-    @Type(() => Date)
+    @IsDateString({}, { message: 'fecha_inicio debe tener formato YYYY-MM-DD' })
     @IsOptional()
-    fecha_inicio?: Date;
+    fecha_inicio?: string;
 
-    @Type(() => Date)
+    @IsDateString({}, { message: 'fecha_fin debe tener formato YYYY-MM-DD' })
     @IsOptional()
-    fecha_fin?: Date;
+    fecha_fin?: string;
 
     @IsBoolean()
     @IsOptional()

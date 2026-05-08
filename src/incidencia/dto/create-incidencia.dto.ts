@@ -2,10 +2,12 @@ import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class CreateIncidenciaDto {
+    @Type(() => Number)
     @IsNumber()
     @IsNotEmpty()
     id_empleado: number;
 
+    @Type(() => Number)
     @IsNumber()
     @IsNotEmpty()
     id_tipo_incidencia: number;

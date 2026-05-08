@@ -300,6 +300,50 @@ export class DocEmpleadoService {
     return await this.docEmpleadoRepository.save(doc);
   }
 
+  async replaceFile(id: number, file: Express.Multer.File): Promise<DocEmpleado> {
+    const doc = await this.findOne(id);
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException('El archivo no debe exceder 10MB');
+    }
+
+    if (fs.existsSync(doc.ruta_archivo)) {
+      fs.unlinkSync(doc.ruta_archivo);
+    }
+
+    const uploadPath = path.dirname(doc.ruta_archivo);
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    const extension = path.extname(file.originalname);
+    const nombreEmpleadoLimpio = doc.empleado.nombre
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
+
+    const nombreTipoDocLimpio = doc.tipoDoc.nombre_doc
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
+
+    const timestamp = Date.now();
+    const fileName = `${nombreEmpleadoLimpio}_${nombreTipoDocLimpio}_v${doc.version}_${timestamp}${extension}`;
+    const filePath = path.join(uploadPath, fileName);
+
+    fs.writeFileSync(filePath, file.buffer);
+
+    doc.nombre_archivo = file.originalname;
+    doc.ruta_archivo = filePath;
+
+    return await this.docEmpleadoRepository.save(doc);
+  }
+
   async remove(id: number): Promise<void> {
     const doc = await this.findOne(id);
 

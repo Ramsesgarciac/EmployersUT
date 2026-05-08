@@ -84,6 +84,19 @@ export class DocEmpleadoController {
     return this.docEmpleadoService.activarVersion(id);
   }
 
+  @Patch(':id/replace')
+  @UseInterceptors(FileInterceptor('file'))
+  async replaceFile(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    if (!file) {
+      throw new BadRequestException('Debe proporcionar un archivo');
+    }
+
+    return await this.docEmpleadoService.replaceFile(id, file);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number) {

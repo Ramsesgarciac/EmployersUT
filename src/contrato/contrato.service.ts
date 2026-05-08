@@ -46,6 +46,12 @@ export class ContratoService {
     });
   }
 
+  private parsearFechaLocal(fechaStr: string): Date {
+    // Evita el desfase de zona horaria parseando la fecha como local
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    return new Date(year, month - 1, day, 12, 0, 0); // mediodía para evitar desfases
+  }
+
   private getFechaObjetivo(diasRestantes: number): { inicio: Date; fin: Date } {
     const inicio = new Date();
     inicio.setHours(0, 0, 0, 0);
@@ -141,8 +147,8 @@ export class ContratoService {
   async uploadContrato(
     id_empleado: number,
     id_tipo_contrato: number,
-    fecha_inicio: Date,
-    fecha_fin: Date,
+    fecha_inicio: string,
+    fecha_fin: string,
     file: Express.Multer.File
   ): Promise<Contrato> {
     const empleado = await this.empleadoRepository.findOne({
@@ -386,14 +392,36 @@ export class ContratoService {
   async update(id: number, updateContratoDto: UpdateContratoDto): Promise<Contrato> {
     const contrato = await this.findOne(id);
 
-    if (updateContratoDto.fecha_inicio && updateContratoDto.fecha_fin) {
-      if (new Date(updateContratoDto.fecha_inicio) >= new Date(updateContratoDto.fecha_fin)) {
-        throw new BadRequestException('La fecha de inicio debe ser menor a la fecha fin');
-      }
+    const fechaInicio = updateContratoDto.fecha_inicio
+      ? this.parsearFechaLocal(updateContratoDto.fecha_inicio)  // 👈 Cambio
+      : contrato.fecha_inicio;
+
+    const fechaFin = updateContratoDto.fecha_fin
+      ? this.parsearFechaLocal(updateContratoDto.fecha_fin)     // 👈 Cambio
+      : contrato.fecha_fin;
+
+    if (fechaInicio >= fechaFin) {
+      throw new BadRequestException('La fecha de inicio debe ser menor a la fecha fin');
     }
 
-    Object.assign(contrato, updateContratoDto);
-    return await this.contratoRepository.save(contrato);
+    const updateData: Partial<Contrato> = {};
+
+    if (updateContratoDto.fecha_inicio !== undefined) {
+      updateData.fecha_inicio = this.parsearFechaLocal(updateContratoDto.fecha_inicio);
+    }
+    if (updateContratoDto.fecha_fin !== undefined) {
+      updateData.fecha_fin = this.parsearFechaLocal(updateContratoDto.fecha_fin);
+    }
+    if (updateContratoDto.vigente !== undefined) {
+      updateData.vigente = updateContratoDto.vigente;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      throw new BadRequestException('No se proporcionaron campos para actualizar');
+    }
+
+    await this.contratoRepository.update(id, updateData);
+    return await this.findOne(id);
   }
 
   async replaceFile(id: number, file: Express.Multer.File): Promise<Contrato> {

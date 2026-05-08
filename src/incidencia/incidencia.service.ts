@@ -85,8 +85,47 @@ export class IncidenciaService {
 
   async update(id: number, updateIncidenciaDto: UpdateIncidenciaDto): Promise<Incidencia> {
     const incidencia = await this.findOne(id);
-    Object.assign(incidencia, updateIncidenciaDto);
-    return await this.incidenciaRepository.save(incidencia);
+
+    if (updateIncidenciaDto.id_empleado !== undefined) {
+      const empleado = await this.empleadoRepository.findOne({
+        where: { id_empleado: updateIncidenciaDto.id_empleado }
+      });
+
+      if (!empleado) {
+        throw new NotFoundException(`Empleado con ID ${updateIncidenciaDto.id_empleado} no encontrado`);
+      }
+
+      incidencia.id_empleado = updateIncidenciaDto.id_empleado;
+      incidencia.empleado = empleado;
+    }
+
+    if (updateIncidenciaDto.id_tipo_incidencia !== undefined) {
+      const tipoIncidencia = await this.tipoIncidenciaRepository.findOne({
+        where: { id_tipo_incidencia: updateIncidenciaDto.id_tipo_incidencia }
+      });
+
+      if (!tipoIncidencia) {
+        throw new NotFoundException(`Tipo de incidencia con ID ${updateIncidenciaDto.id_tipo_incidencia} no encontrado`);
+      }
+
+      incidencia.id_tipo_incidencia = updateIncidenciaDto.id_tipo_incidencia;
+      incidencia.tipoIncidencia = tipoIncidencia;
+    }
+
+    if (updateIncidenciaDto.fecha_inicio !== undefined) {
+      incidencia.fecha_inicio = updateIncidenciaDto.fecha_inicio;
+    }
+
+    if (updateIncidenciaDto.fecha_fin !== undefined) {
+      incidencia.fecha_fin = updateIncidenciaDto.fecha_fin;
+    }
+
+    if (updateIncidenciaDto.observaciones !== undefined) {
+      incidencia.observaciones = updateIncidenciaDto.observaciones;
+    }
+
+    const actualizada = await this.incidenciaRepository.save(incidencia);
+    return await this.findOne(actualizada.id_incidencia);
   }
 
   async remove(id: number): Promise<void> {

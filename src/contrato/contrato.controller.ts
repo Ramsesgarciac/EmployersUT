@@ -47,8 +47,8 @@ export class ContratoController {
     return await this.contratoService.uploadContrato(
       empleadoId,
       tipoContratoId,
-      new Date(fecha_inicio),
-      new Date(fecha_fin),
+      fecha_inicio,  // 👈 Antes tenía new Date(fecha_inicio) — elimínalo
+      fecha_fin,
       file
     );
   }
