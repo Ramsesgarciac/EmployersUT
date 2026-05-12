@@ -390,37 +390,74 @@ export class ContratoService {
   }
 
   async update(id: number, updateContratoDto: UpdateContratoDto): Promise<Contrato> {
+
     const contrato = await this.findOne(id);
 
+    // ✅ Validar tipo de contrato si viene en el request
+    if (updateContratoDto.id_tipo_contrato !== undefined) {
+
+      const tipoContrato = await this.tipoContratoRepository.findOne({
+        where: {
+          id_tipo_contrato: updateContratoDto.id_tipo_contrato
+        }
+      });
+
+      if (!tipoContrato) {
+        throw new NotFoundException(
+          `Tipo de contrato con ID ${updateContratoDto.id_tipo_contrato} no encontrado`
+        );
+      }
+    }
+
     const fechaInicio = updateContratoDto.fecha_inicio
-      ? this.parsearFechaLocal(updateContratoDto.fecha_inicio)  // 👈 Cambio
+      ? this.parsearFechaLocal(updateContratoDto.fecha_inicio)
       : contrato.fecha_inicio;
 
     const fechaFin = updateContratoDto.fecha_fin
-      ? this.parsearFechaLocal(updateContratoDto.fecha_fin)     // 👈 Cambio
+      ? this.parsearFechaLocal(updateContratoDto.fecha_fin)
       : contrato.fecha_fin;
 
     if (fechaInicio >= fechaFin) {
-      throw new BadRequestException('La fecha de inicio debe ser menor a la fecha fin');
+      throw new BadRequestException(
+        'La fecha de inicio debe ser menor a la fecha fin'
+      );
     }
 
     const updateData: Partial<Contrato> = {};
 
+    // ✅ Actualizar fecha inicio
     if (updateContratoDto.fecha_inicio !== undefined) {
-      updateData.fecha_inicio = this.parsearFechaLocal(updateContratoDto.fecha_inicio);
+      updateData.fecha_inicio = this.parsearFechaLocal(
+        updateContratoDto.fecha_inicio
+      );
     }
+
+    // ✅ Actualizar fecha fin
     if (updateContratoDto.fecha_fin !== undefined) {
-      updateData.fecha_fin = this.parsearFechaLocal(updateContratoDto.fecha_fin);
+      updateData.fecha_fin = this.parsearFechaLocal(
+        updateContratoDto.fecha_fin
+      );
     }
+
+    // ✅ Actualizar vigente
     if (updateContratoDto.vigente !== undefined) {
       updateData.vigente = updateContratoDto.vigente;
     }
 
+    // ✅ Actualizar tipo contrato
+    if (updateContratoDto.id_tipo_contrato !== undefined) {
+      updateData.id_tipo_contrato =
+        updateContratoDto.id_tipo_contrato;
+    }
+
     if (Object.keys(updateData).length === 0) {
-      throw new BadRequestException('No se proporcionaron campos para actualizar');
+      throw new BadRequestException(
+        'No se proporcionaron campos para actualizar'
+      );
     }
 
     await this.contratoRepository.update(id, updateData);
+
     return await this.findOne(id);
   }
 
