@@ -12,9 +12,13 @@ import {
   Res,
   HttpCode,
   HttpStatus,
-  Patch
+  Patch,
+  UploadedFiles
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileInterceptor,
+  FilesInterceptor
+} from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { DocEmpleadoService } from './doc-empleado.service';
 
@@ -101,5 +105,30 @@ export class DocEmpleadoController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.docEmpleadoService.remove(id);
+  }
+
+
+  @Post(':id/multiple')
+  @UseInterceptors(
+    FilesInterceptor('files', 20)
+  )
+
+  async uploadMultiple(
+    @Param('id') id: number,
+
+    @UploadedFiles()
+    files: Express.Multer.File[],
+
+    @Body('tipos')
+    tipos: string,
+  ) {
+
+    const tiposParseados = JSON.parse(tipos);
+
+    return this.docEmpleadoService.uploadMultipleDocumentos(
+      +id,
+      files,
+      tiposParseados
+    );
   }
 }

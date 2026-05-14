@@ -371,4 +371,32 @@ export class DocEmpleadoService {
 
     await this.docEmpleadoRepository.remove(doc);
   }
+
+  async uploadMultipleDocumentos(
+    id_empleado: number,
+    files: Express.Multer.File[],
+    tipos: number[],
+  ): Promise<DocEmpleado[]> {
+
+    if (files.length !== tipos.length) {
+      throw new BadRequestException(
+        'Cada archivo debe tener un tipo de documento'
+      );
+    }
+
+    const resultados: DocEmpleado[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+
+      const nuevoDoc = await this.uploadDocumento(
+        id_empleado,
+        tipos[i],
+        files[i]
+      );
+
+      resultados.push(nuevoDoc);
+    }
+
+    return resultados;
+  }
 }
