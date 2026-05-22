@@ -5,6 +5,7 @@ import { DocEmpleado } from '../../doc-empleado/entities/doc-empleado.entity';
 import { HojaVida } from '../../hoja-vida/entities/hoja-vida.entity';
 import { Contrato } from '../../contrato/entities/contrato.entity';
 import { FaltaAdministrativa } from '../../falta-administrativa/entities/falta-administrativa.entity';
+import { Adendum } from '../../adendum/entities/adendum.entity';
 
 
 @Entity('empleado')
@@ -63,6 +64,9 @@ export class Empleado {
 
     @OneToMany(() => Contrato, (contrato) => contrato.empleado)
     contratos: Contrato[];
+
+    @OneToMany(() => Adendum, (adendum) => adendum.empleado)
+    adendums: Adendum[];
 
     @OneToMany(
         () => FaltaAdministrativa,

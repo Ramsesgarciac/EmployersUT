@@ -20,6 +20,7 @@ import { Incidencia } from './incidencia/entities/incidencia.entity';
 import { TipoIncidencia } from './tipo-incidencia/entities/tipo-incidencia.entity';
 import { Justificante } from './justificante/entities/justificante.entity';
 import { Contrato } from './contrato/entities/contrato.entity';
+import { Adendum } from './adendum/entities/adendum.entity';
 import { HojaVida } from './hoja-vida/entities/hoja-vida.entity';
 import { Evento } from './evento/entities/evento.entity';
 import { CatalogoEventos } from './catalogo-eventos/entities/catalogo-evento.entity';
@@ -32,6 +33,7 @@ import { EventoModule } from './evento/evento.module';
 import { HojaVidaModule } from './hoja-vida/hoja-vida.module';
 import { TipoContratoModule } from './tipo-contrato/tipo-contrato.module';
 import { ContratoModule } from './contrato/contrato.module';
+import { AdendumModule } from './adendum/adendum.module';
 import { TipoContrato } from './tipo-contrato/entities/tipo-contrato.entity';
 import { CatActividadesModule } from './cat-actividades/cat-actividades.module';
 import { AuthModule } from './auth/auth.module';
@@ -64,6 +66,7 @@ import { FaltaAdministrativaModule } from './falta-administrativa/falta-administ
           TipoIncidencia,
           Justificante,
           Contrato,
+          Adendum,
           HojaVida,
           Evento,
           CatalogoEventos,
@@ -92,6 +95,7 @@ import { FaltaAdministrativaModule } from './falta-administrativa/falta-administ
     TipoContratoModule,
     AuthModule,
     ContratoModule,
+    AdendumModule,
     CatActividadesModule,
     FaltaAdministrativaModule
   ],
