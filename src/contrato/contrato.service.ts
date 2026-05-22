@@ -236,7 +236,7 @@ export class ContratoService {
     }
   }
 
-  @Cron('0 8 * * *', { timeZone: 'America/Mexico_City' })
+  @Cron('0 9 * * *', { timeZone: 'America/Mexico_City' })
   async enviarAlertasContratosPorVencer(): Promise<{
     total_alertas: number;
     detalle: Array<{ dias_restantes: number; contratos_encontrados: number; correos_enviados: number }>;

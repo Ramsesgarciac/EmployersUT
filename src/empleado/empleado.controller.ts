@@ -9,7 +9,9 @@ import {
   ParseIntPipe,
   HttpStatus,
   HttpCode,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { EmpleadoService } from './empleado.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
@@ -37,6 +39,35 @@ export class EmpleadoController {
   @Get('inactivos')
   findDisactive() {
     return this.empleadoService.findDisctive();
+  }
+
+  @Get('exportar/excel')
+  async exportAllExcel(@Res() res: Response) {
+    const buffer = await this.empleadoService.exportAllToExcel();
+
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="empleados.xlsx"',
+      'Content-Length': buffer.length,
+    });
+
+    res.send(buffer);
+  }
+
+  @Get(':id/exportar/excel')
+  async exportOneExcel(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const buffer = await this.empleadoService.exportOneToExcel(id);
+
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="empleado_${id}.xlsx"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.send(buffer);
   }
 
   @Get(':id')
