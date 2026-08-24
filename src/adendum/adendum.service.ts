@@ -10,7 +10,7 @@ import * as path from 'path';
 @Injectable()
 export class AdendumService {
   constructor(
-    @InjectRepository(Adendum)
+    @InjectRepository(Adendum) 
     private adendumRepository: Repository<Adendum>,
     @InjectRepository(Empleado)
     private empleadoRepository: Repository<Empleado>,
